@@ -16,7 +16,8 @@ float Roll_r, Pitch_r, Yaw_r;
 float AccX, AccY, AccZ,GyroX,GyroZ,GyroY;
 float AngleRoll, AnglePitch, AngleSide ;
 
-
+int servo;
+int motorspeed;
 
 // Replace the next variables with your SSID/Password combination
 const char* ssid = "harshalRaspi";
@@ -150,78 +151,16 @@ void callback(char* topic, byte* message, unsigned int length) {
     }
   }
   */
-  if (String(topic) == "esp32/forward") {
-  Serial.print("Changing output to ");
-  if(messageTemp == "on"){
-    Serial.println("on");
-    int16_t leftMotorspeed = 200;
-    int16_t rightMotorspeed = 200;
-    int16_t servoAngle = 125;
-    sendData(leftMotorspeed, rightMotorspeed, servoAngle);
+  if (String(topic) == "esp32/slider") {
+    servo = atoi(messageTemp.c_str());
   }
-  else if(messageTemp == "off"){
-    Serial.println("off");
-    int16_t leftMotorspeed = 0;
-    int16_t rightMotorspeed = 0;
-    int16_t servoAngle = 125;
-    sendData(leftMotorspeed, rightMotorspeed, servoAngle);
+  
+  if (String(topic) == "esp32/motorspeed") {
+    motorspeed = atoi(messageTemp.c_str());
   }
+  sendData(motorspeed,motorspeed,servo);
 }
 
-  if (String(topic) == "esp32/backwards") {
-  Serial.print("Changing output to ");
-  if(messageTemp == "on"){
-    Serial.println("on");
-    int16_t leftMotorspeed = -200;
-    int16_t rightMotorspeed = -200;
-    int16_t servoAngle = 125;
-    sendData(leftMotorspeed, rightMotorspeed, servoAngle);
-  }
-  else if(messageTemp == "off"){
-    Serial.println("off");
-    int16_t leftMotorspeed = 0;
-    int16_t rightMotorspeed = 0;
-    int16_t servoAngle = 125;
-    sendData(leftMotorspeed, rightMotorspeed, servoAngle);
-  }
-}
-
-  if (String(topic) == "esp32/left") {
-  Serial.print("Changing output to ");
-  if(messageTemp == "on"){
-    Serial.println("on");
-    int16_t leftMotorspeed = 200;
-    int16_t rightMotorspeed = 200;
-    int16_t servoAngle = 0;
-    sendData(leftMotorspeed, rightMotorspeed, servoAngle);
-  }
-  else if(messageTemp == "off"){
-    Serial.println("off");
-    int16_t leftMotorspeed = 0;
-    int16_t rightMotorspeed = 0;
-    int16_t servoAngle = 125;
-    sendData(leftMotorspeed, rightMotorspeed, servoAngle);
-  }
-}
-
-  if (String(topic) == "esp32/right") {
-  Serial.print("Changing output to ");
-  if(messageTemp == "on"){
-    Serial.println("on");
-    int16_t leftMotorspeed = 200;
-    int16_t rightMotorspeed = 200;
-    int16_t servoAngle = 180;
-    sendData(leftMotorspeed, rightMotorspeed, servoAngle);
-  }
-  else if(messageTemp == "off"){
-    Serial.println("off");
-    int16_t leftMotorspeed = 0;
-    int16_t rightMotorspeed = 0;
-    int16_t servoAngle = 125;
-    sendData(leftMotorspeed, rightMotorspeed, servoAngle);
-  }
-}
-}
 
 void reconnect() {
   // Loop until we're reconnected
@@ -233,8 +172,10 @@ void reconnect() {
       // Subscribe
       client.subscribe("esp32/forward");
       client.subscribe("esp32/backwards");
-      client.subscribe("esp32/left");
+      client.subscribe("esp32/motorspeed");
       client.subscribe("esp32/right");
+      client.subscribe("esp32/slider");
+
     } else {
       Serial.print("failed, rc=");
       Serial.print(client.state());
@@ -277,13 +218,12 @@ void loop() {
     client.publish("esp32/temperature", tempString);
 
 
-    Wire.requestFrom(4, 2); // request 2 bytes from slave device with address 8
+    Wire.requestFrom(2, 4); // request 2 bytes from slave device with address 8
     while (Wire.available()) {
     uint8_t enc1 = Wire.read();
     uint8_t enc1_2 = Wire.read();
     uint8_t enc2 = Wire.read();
     uint8_t enc2_2 = Wire.read();
-
     uint16_t enc1_count = (enc1 << 8)|enc1_2;
     uint16_t enc2_count = (enc2 << 8)|enc2_2;
     
