@@ -9,7 +9,6 @@
 #include <HCSR04.h>
 #include <MPU6050_tockn.h>
 #include <Wire.h>
-#include <Adafruit_BME280.h>
 #include <Adafruit_Sensor.h>
 #include <math.h>
 #define Rad2Deg  180 / M_PI;
@@ -217,7 +216,9 @@ void loop() {
     Serial.print("Temperature: ");
     Serial.println(tempString);
     client.publish("esp32/temperature", tempString);
-
+    
+    uint16_t enc1_count;
+    uint16_t enc2_count;
 
     Wire.requestFrom(4, 4); // request 4 bytes from slave device with address 8
     while (Wire.available()) {
@@ -225,8 +226,8 @@ void loop() {
     uint8_t enc1_2 = Wire.read();
     uint8_t enc2 = Wire.read();
     uint8_t enc2_2 = Wire.read();
-    uint16_t enc1_count = (enc1 << 8) | enc1_2;
-    uint16_t enc2_count = (enc2 << 8) | enc2_2;
+    enc1_count = (enc1 << 8) | enc1_2;
+    enc2_count = (enc2 << 8) | enc2_2;
     }
         
     char temp1[16];
